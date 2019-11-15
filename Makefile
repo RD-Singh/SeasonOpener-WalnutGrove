@@ -29,8 +29,7 @@ VERSION:=1.0.0
 EXCLUDE_SRC_FROM_LIB+=$(foreach file, $(SRCDIR)/opcontrol $(SRCDIR)/initialize $(SRCDIR)/autonomous,$(foreach cext,$(CEXTS),$(file).$(cext)) $(foreach cxxext,$(CXXEXTS),$(file).$(cxxext)))
 EXCLUDE_SRC_FROM_LIB+=$(SRCDIR)/drive.cpp
 EXCLUDE_SRC_FROM_LIB+=$(SRCDIR)/motors.cpp
-EXCLUDE_SRC_FROM_LIB+=$(SRCDIR)/motionProfile.cpp
-
+EXCLUDE_SRC_FROM_LIB+=$(SRCDIR)/vision.cpp
 # files that get distributed to every user (beyond your source archive) - add
 # whatever files you want here. This line is configured to add all header files
 # that are in the the include directory get exported
