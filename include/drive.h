@@ -16,6 +16,9 @@ class Drive
     double pidCal(double targetDistance, double currentDistance, double kp, double ki, double kd);
     double powerLimit(double maxSpeed, double speed);
     void move(double targetDistance, int maxPower, int intakeP, int trayP, int liftP);
+    void arcTurn(bool direction, bool horizontal);
+
+
 };
 
 

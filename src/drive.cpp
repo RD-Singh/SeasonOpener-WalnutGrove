@@ -6,7 +6,7 @@ pros::Motor frontL(1, HIGHSPEED, N_REV, COUNTS);
 pros::Motor frontR(10, HIGHSPEED, REV, COUNTS);
 pros::Motor tray(4, TORQUE, N_REV, DEGREES);
 
-pros::Motor intakeR(3, HIGHSPEED, N_REV, DEGREES);
+pros::Motor intakeR(6, HIGHSPEED, N_REV, DEGREES);
 pros::Motor intakeL(8, HIGHSPEED, REV, DEGREES);
 pros::Motor lift(7, HIGHSPEED, REV, DEGREES);
 
@@ -443,6 +443,8 @@ void Drive::move(double targetDistance, int maxPower, int intakeP, int trayP, in
     double kp = 0.105, kd = 0.08, ki = 0.01, secKp = 0.2;
 
     drive->resetPos();
+    drive->resetBrake();
+
 
     int power = 0, finalPower;
 
@@ -509,7 +511,7 @@ void Drive::move(double targetDistance, int maxPower, int intakeP, int trayP, in
         if(fabs(error) < 120)
         {
           drive->setZero();
-          //drive->driveBrakeHold();
+          drive->resetBrake();
           error = 0;
         }
 
@@ -520,4 +522,175 @@ void Drive::move(double targetDistance, int maxPower, int intakeP, int trayP, in
     lift.move(0);
     intakeR.move(0);
     intakeL.move(0);
+}
+/*
+void Drive::arcTurn(double distance, double degrees, int intakeP, int trayP, int liftP)
+{
+  int maxSpeed = 110;
+
+  Drive::move(distance, maxSpeed, intakeP, trayP, liftP);
+
+  tray.set_brake_mode(HOLD);
+
+  pros::ADIGyro gyro ('A', 1.03);
+
+  double kp = 0.061; //0.23 on friday //0.24
+  double kd = 0.085; //2.7 on friday //2.65 at BCIT //1.54
+  double ki = 0.07;
+
+  double power;
+  double finalPower;
+  double error = 1;
+  double errorRight, errorLeft, KpDist = 0.06;
+
+  double targetBearing = degrees*10;
+  double currentBearing;
+  double threshErrR, threshErrL;
+
+  backL.set_brake_mode(COAST);
+  backR.set_brake_mode(COAST);
+  frontL.set_brake_mode(COAST);
+  frontR.set_brake_mode(COAST);
+  int diff;
+
+  while(error!=0)
+  {
+    currentBearing = gyro.get_value();
+    error = targetBearing - currentBearing;
+
+    power = Drive::pidCal(targetBearing, currentBearing, kp, ki, kd);
+
+    finalPower = distance < 0 ? -127 : 127;
+
+    int diff = distance < 0 ? 25 : -25;
+
+
+    errorLeft = (frontL.get_position() + backL.get_position())/2;
+    errorRight = (frontR.get_position() + backL.get_position())/2;
+
+    threshErrR = (errorRight * KpDist) > finalPower ? finalPower + diff : (errorRight * KpDist);
+    threshErrL = (errorLeft * KpDist) < finalPower ? (errorLeft * KpDist) : finalPower + diff;
+
+
+       if (degrees > 0 && distance > 0){  //when bot is commanded to go right while going forward
+         backL.move(finalPower);
+         frontL.move(finalPower);
+         backR.move(threshErrR);
+         frontR.move(threshErrR);
+       }
+
+       if (degrees < 0 && distance > 0){  //when bot is commanded to go left while forward
+         backR.move(finalPower);
+         frontR.move(finalPower);
+         backL.move(threshErrL);
+         frontL.move(threshErrL);
+       }
+
+       if (degrees > 0 && distance < 0){  //when bot is commanded to go right while going backward
+         backR.move(-finalPower);
+         frontR.move(-finalPower);
+         backL.move(threshErrL);
+         frontL.move(threshErrL);
+       }
+
+       if (degrees < 0 && distance < 0){  //when bot is commanded to go left while going backward
+         backL.move(finalPower);
+         frontL.move(finalPower);
+         backR.move(errorRight * KpDist);
+         frontR.move(errorRight * KpDist);
+       }
+
+    if (fabs(error) < 45)
+    {
+      error = 0;
+    }
+
+    pros::delay(20);
+  }
+
+  frontL.move(0);
+  frontR.move(0);
+  backL.move(0);
+  backR.move(0);
+
+}*/
+void Drive::arcTurn(bool direction, bool horizontal)
+{
+  tray.set_brake_mode(HOLD);
+
+  pros::ADIGyro gyro ('A', 1.03);
+
+  double rightP= 0;
+  double leftP = 0;
+
+  if(direction)
+  {
+    if(horizontal)
+    {
+      rightP = 120;
+      leftP = 50;
+    }
+    else
+    {
+      rightP = 50;
+      leftP = 120;
+    }
+  }
+  else
+  {
+    if(horizontal)
+    {
+      rightP = -90;
+      leftP = -30;
+    }
+    else
+    {
+      rightP = -50;
+      leftP = -120;
+    }
+  }
+
+  double error = 1;
+
+
+  double targetBearing = 700;
+  double currentBearing;
+
+  backL.set_brake_mode(HOLD);
+  backR.set_brake_mode(HOLD);
+  frontL.set_brake_mode(HOLD);
+  frontR.set_brake_mode(HOLD);
+
+  while(error!=0)
+  {
+    currentBearing = gyro.get_value();
+    error = targetBearing - currentBearing;
+
+    backL.move(leftP);
+    frontL.move(leftP);
+    backR.move(rightP);
+    frontR.move(rightP);
+    intakeR.move(127);
+    intakeL.move(127);
+
+    if(fabs(error) < 450)
+    {
+      rightP *= 0.99;
+    }
+
+    if (fabs(error) < 30)
+    {
+      error = 0;
+    }
+
+    pros::delay(20);
+}
+    frontL.move(0);
+    frontR.move(0);
+    backL.move(0);
+    backR.move(0);
+
+    intakeR.move(0);
+    intakeL.move(0);
+
 }

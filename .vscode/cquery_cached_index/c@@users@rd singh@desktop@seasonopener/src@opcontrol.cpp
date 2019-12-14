@@ -23,7 +23,7 @@ void opcontrol() {
 	pros::Motor leftF(1, HIGHSPEED, N_REV, COUNTS);
 	pros::Motor leftB(2, HIGHSPEED, N_REV, COUNTS);
 
-	pros::Motor intakeL(3, TORQUE, N_REV, DEGREES);
+	pros::Motor intakeL(6, TORQUE, N_REV, DEGREES);
 	pros::Motor intakeR(8, TORQUE, REV, DEGREES);
 	pros::Motor lift(7, TORQUE, REV, DEGREES);
 	pros::Motor tray(4, TORQUE, N_REV, DEGREES);
@@ -85,29 +85,26 @@ void opcontrol() {
 
 		if(master.get_digital(BTN_B))
 		{
-			tray.move_relative(90, 50);
+			intakeL.move(-127);
+		  intakeR.move(-127);
+		  lift.move(127);
+		  tray.move(15);
 
-		  pros::delay(600);
-
-		  lift.move_relative(740, 127);
-
-		  pros::delay(1600);
-
-		  lift.move_relative(-650, -127);
+		  pros::delay(1100);
 
 		  tray.move(0);
-		  intakeL.move(0);
-		  intakeR.move(0);
+		  lift.move(-127);
+			intakeL.move(0);
+			intakeR.move(0);
 
-		  pros::delay(900);
+		  pros::delay(650);
 
 		}
 
 		if(master.get_digital(BTN_Y))
 		{
-			tray.move_relative(700, 30);
-
-			pros::delay(3200);
+			
+			//pid->arcTurn(0, -90, 0, 0, 0);
 		}
 
 
